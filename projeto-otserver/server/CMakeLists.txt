@@ -1,0 +1,183 @@
+
+cmake_minimum_required(VERSION 3.10)
+
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+
+project(tfs CXX)
+
+add_subdirectory(src)
+add_executable(tfs ${tfs_SRC})
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+set_target_properties(tfs PROPERTIES CXX_STANDARD 17)
+set_target_properties(tfs PROPERTIES CXX_STANDARD_REQUIRED ON)
+
+if (NOT WIN32)
+    add_compile_options(-Wall -Werror -pipe -fvisibility=hidden)
+endif ()
+
+set(CMAKE_CXX_FLAGS_PERFORMANCE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
+
+if (CMAKE_COMPILER_IS_GNUCXX)
+    add_compile_options(-fno-strict-aliasing)
+endif ()
+
+# Find packages.
+find_package(CryptoPP QUIET)
+
+if (CryptoPP_FOUND)
+    # vcpkg-provided CMake package called CryptoPP
+    if (TARGET cryptopp::cryptopp)
+        set(Crypto++_LIBRARIES cryptopp::cryptopp)
+    elseif (TARGET cryptopp-shared)
+        set(Crypto++_LIBRARIES cryptopp-shared)
+    elseif (TARGET cryptopp-static)
+        set(Crypto++_LIBRARIES cryptopp-static)
+    else()
+        set(Crypto++_LIBRARIES cryptopp)
+    endif()
+else()
+    find_package(Crypto++ REQUIRED)
+endif ()
+
+find_package(fmt 6.1.2 REQUIRED)
+
+# Look for vcpkg-provided libmariadb first.
+# If we link to the file directly, we might miss its dependencies from vcpkg.
+find_package(unofficial-libmariadb CONFIG QUIET)
+
+if (unofficial-libmariadb_FOUND)
+    set(MYSQL_CLIENT_LIBS "C:/vcpkg/installed/x64-windows/lib/libmariadb.lib")
+else ()
+    find_package(MySQL REQUIRED)
+endif ()
+
+find_package(Threads REQUIRED)
+find_package(PugiXML REQUIRED)
+
+# Selects LuaJIT if user defines or auto-detected.
+if (DEFINED USE_LUAJIT AND NOT USE_LUAJIT)
+    set(FORCE_LUAJIT ${USE_LUAJIT})
+else ()
+    find_package(LuaJIT)
+    set(FORCE_LUAJIT ${LuaJIT_FOUND})
+endif ()
+
+option(USE_LUAJIT "Use LuaJIT" ${FORCE_LUAJIT})
+
+if (FORCE_LUAJIT)
+    if (APPLE)
+        set(CMAKE_EXE_LINKER_FLAGS "-pagezero_size 10000 -image_base 100000000")
+    endif ()
+else ()
+    find_package(Lua REQUIRED)
+endif ()
+
+find_package(Boost 1.66.0 REQUIRED COMPONENTS date_time system filesystem iostreams)
+
+include_directories(
+    ${Boost_INCLUDE_DIRS}
+    ${Crypto++_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}
+    ${MYSQL_INCLUDE_DIR}
+    ${PUGIXML_INCLUDE_DIR}
+)
+
+# Platform-specific libraries.
+set(TFS_PLATFORM_LIBRARIES)
+
+if (WIN32)
+    list(APPEND TFS_PLATFORM_LIBRARIES
+        mswsock
+        ws2_32
+    )
+endif ()
+
+# Link libraries.
+target_link_libraries(tfs PRIVATE
+    Boost::date_time
+    Boost::system
+    Boost::filesystem
+    Boost::iostreams
+    fmt::fmt
+    ${CMAKE_THREAD_LIBS_INIT}
+    ${Crypto++_LIBRARIES}
+    ${LUA_LIBRARIES}
+    ${MYSQL_CLIENT_LIBS}
+    ${PUGIXML_LIBRARIES}
+    ${TFS_PLATFORM_LIBRARIES}
+)
+
+### INTERPROCEDURAL_OPTIMIZATION ###
+
+cmake_policy(SET CMP0069 NEW)
+
+if (WIN32)
+
+    # Disable IPO / LTO on Windows with MinGW.
+    # Avoids linker problems involving Boost and LTO.
+    set_target_properties(tfs PROPERTIES
+        INTERPROCEDURAL_OPTIMIZATION FALSE
+        INTERPROCEDURAL_OPTIMIZATION_RELEASE FALSE
+    )
+
+    message(STATUS "IPO / LTO disabled on Windows (MinGW compatibility)")
+
+else ()
+
+    include(CheckIPOSupported)
+
+    check_ipo_supported(RESULT result OUTPUT error)
+
+    if (result)
+        message(STATUS "IPO / LTO enabled")
+
+        set_target_properties(tfs PROPERTIES
+            INTERPROCEDURAL_OPTIMIZATION TRUE
+        )
+    else ()
+        message(STATUS "IPO / LTO not supported: ${error}")
+    endif ()
+
+endif ()
+
+### END INTERPROCEDURAL_OPTIMIZATION ###
+
+### Git Version ###
+
+option(SKIP_GIT "Skip checking for git updates" OFF)
+
+if (NOT SKIP_GIT)
+    set(PRE_CONFIGURE_FILE "cmake/gitmetadata.h.in")
+    set(POST_CONFIGURE_FILE "${CMAKE_CURRENT_BINARY_DIR}/gitmetadata.h")
+
+    include(git_watcher)
+
+    if (Git_FOUND)
+        add_dependencies(tfs check_git)
+        target_include_directories(tfs PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    endif ()
+endif ()
+
+### END Git Version ###
+
+# Precompiled header.
+# note: cotire() must be called last on a target.
+
+if (${CMAKE_VERSION} VERSION_GREATER "3.16.0")
+    target_precompile_headers(tfs PUBLIC src/otpch.h)
+else ()
+    include(cotire)
+
+    set_target_properties(tfs PROPERTIES
+        COTIRE_CXX_PREFIX_HEADER_INIT "src/otpch.h"
+    )
+
+    set_target_properties(tfs PROPERTIES
+        COTIRE_ADD_UNITY_BUILD FALSE
+    )
+
+    cotire(tfs)
+endif ()

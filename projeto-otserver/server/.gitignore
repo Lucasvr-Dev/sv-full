@@ -1,0 +1,13 @@
+
+# Arquivos de compilação e artefatos
+build/
+vc17/
+*.pch
+
+# Visual Studio precompiled headers
+/build/tfs.dir/Release/cmake_pch.pch
+/vc17/theforgo.A10F9657/x64/Release/theforgottenserver-x64.pch
+
+# Build artifacts backed up on shared Drive
+/build/
+/vc17/

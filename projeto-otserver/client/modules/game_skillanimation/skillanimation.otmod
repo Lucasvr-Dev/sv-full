@@ -1,0 +1,8 @@
+Module
+  name: game_skillanimation
+  description: Esconde por completo o corpo de jogadores com outfit vazio (sem a bola azul de invisibilidade)
+  author: projeto-otserver
+  sandboxed: true
+  scripts: [ skillanimation ]
+  @onLoad: init()
+  @onUnload: terminate()

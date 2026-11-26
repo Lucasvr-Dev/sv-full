@@ -1,0 +1,10 @@
+build/
+**/build/
+*.o
+*.obj
+*.exe
+*.dll
+*.log
+.vs/
+.vscode/
+Thumbs.db

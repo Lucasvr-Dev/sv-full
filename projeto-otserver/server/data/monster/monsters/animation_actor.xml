@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Skin de animação (Sistema 1). O nome exibido é um espaço em branco de propósito;
+     o nome de registro ("Animation Actor") fica em monsters.xml. -->
+<monster name=" " nameDescription="a skill animation" race="undead" experience="0" speed="0" manacost="0">
+	<health now="1000" max="1000" />
+	<look type="130" corpse="0" />
+	<targetchange interval="60000" chance="0" />
+	<flags>
+		<flag summonable="0" />
+		<flag attackable="0" />
+		<flag hostile="0" />
+		<flag illusionable="0" />
+		<flag convinceable="0" />
+		<flag pushable="0" />
+		<flag canpushitems="0" />
+		<flag canpushcreatures="0" />
+		<flag hidehealth="1" />
+		<flag targetdistance="1" />
+	</flags>
+</monster>

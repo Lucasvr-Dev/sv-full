@@ -1,0 +1,10 @@
+Versão do MSBuild 18.11.1-1.26513.3+940033be3 para .NET Framework
+
+  Checking the git repository for changes...
+  database.cpp
+  Gerando código
+  176 of 29944 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    128 functions had inline decision re-evaluated but remain unchanged
+  Finalizada a geração de código
+  tfs.vcxproj -> C:\Users\Aegon\OneDrive\Desktop\projeto-otserver\otserv\build\Release\tfs.exe

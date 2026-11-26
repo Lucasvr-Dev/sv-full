@@ -1,0 +1,1 @@
+LINK : fatal error LNK1181: não foi possível abrir o arquivo de entrada 'libmariadb.lib' [C:\Users\Aegon\OneDrive\Desktop\projeto-otserver\otserv\build\tfs.vcxproj]
