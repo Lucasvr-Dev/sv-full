@@ -1,4 +1,3 @@
-
 cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -44,12 +43,12 @@ endif ()
 
 find_package(fmt 6.1.2 REQUIRED)
 
-# Look for vcpkg-provided libmariadb first.
-# If we link to the file directly, we might miss its dependencies from vcpkg.
+# Look for vcpkg-provided libmariadb first (links the imported target,
+# so no hardcoded path and its dependencies come along).
 find_package(unofficial-libmariadb CONFIG QUIET)
 
 if (unofficial-libmariadb_FOUND)
-    set(MYSQL_CLIENT_LIBS "C:/vcpkg/installed/x64-windows/lib/libmariadb.lib")
+    set(MYSQL_CLIENT_LIBS unofficial::libmariadb)
 else ()
     find_package(MySQL REQUIRED)
 endif ()
@@ -116,14 +115,14 @@ cmake_policy(SET CMP0069 NEW)
 
 if (WIN32)
 
-    # Disable IPO / LTO on Windows with MinGW.
+    # Disable IPO / LTO on Windows.
     # Avoids linker problems involving Boost and LTO.
     set_target_properties(tfs PROPERTIES
         INTERPROCEDURAL_OPTIMIZATION FALSE
         INTERPROCEDURAL_OPTIMIZATION_RELEASE FALSE
     )
 
-    message(STATUS "IPO / LTO disabled on Windows (MinGW compatibility)")
+    message(STATUS "IPO / LTO disabled on Windows")
 
 else ()
 
@@ -173,9 +172,6 @@ else ()
 
     set_target_properties(tfs PROPERTIES
         COTIRE_CXX_PREFIX_HEADER_INIT "src/otpch.h"
-    )
-
-    set_target_properties(tfs PROPERTIES
         COTIRE_ADD_UNITY_BUILD FALSE
     )
 
