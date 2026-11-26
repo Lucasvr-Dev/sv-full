@@ -1020,6 +1020,12 @@ class Item : virtual public Thing
 				getAttributes()->setCustomAttribute(key, static_cast<int64_t>(1));
 			} else if (attributes) {
 				attributes->removeCustomAttribute(std::string("locked"));
+				// se nao sobrou nenhum atributo customizado, remove o atributo "custom" inteiro:
+				// um mapa vazio ainda muda attributeBits e impede o item de empilhar (Item::equals)
+				const ItemAttributes::CustomAttributeMap* customMap = attributes->getCustomAttributeMap();
+				if (customMap && customMap->empty()) {
+					attributes->removeAttribute(ITEM_ATTRIBUTE_CUSTOM);
+				}
 			}
 		}
 

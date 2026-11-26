@@ -833,6 +833,14 @@ void Game::wrap(const ThingPtr& thing)
     m_protocolGame->sendOnWrapItem(thing->getPosition(), thing->getId(), thing->getStackPos());
 }
 
+void Game::lockItem(const ThingPtr& thing)
+{
+    if (!canPerformGameAction() || !thing)
+        return;
+
+    m_protocolGame->sendLockItem(thing->getPosition(), thing->getId(), thing->getStackPos());
+}
+
 void Game::use(const ThingPtr& thing)
 {
     if (!canPerformGameAction() || !thing)

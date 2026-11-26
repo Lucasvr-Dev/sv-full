@@ -140,6 +140,7 @@ class ProtocolGame final : public Protocol
 		void parseEditVip(NetworkMessage& msg);
 
 		void parseRotateItem(NetworkMessage& msg);
+		void parseLockItem(NetworkMessage& msg);
 
 		//Channel tabs
 		void parseChannelInvite(NetworkMessage& msg);

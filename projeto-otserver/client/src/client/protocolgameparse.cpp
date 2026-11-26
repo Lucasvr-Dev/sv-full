@@ -4090,7 +4090,8 @@ ItemPtr ProtocolGame::getItem(const InputMessagePtr& msg, int id)
     }
 
     if (g_game.getClientVersion() < 1281 && g_game.getFeature(Otc::GameThingMarks)) {
-        msg->getU8(); // mark
+        const uint8_t mark = msg->getU8(); // mark
+        item->setLocked(mark == 0xFE); // 0xFE = item trancado (trava individual do servidor)
     }
 
     if (item->isStackable() || item->isFluidContainer() || item->isSplash() || item->isChargeable()) {

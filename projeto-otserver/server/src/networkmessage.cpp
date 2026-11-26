@@ -103,7 +103,7 @@ void NetworkMessage::addItem(const Item* item)
 	const ItemType& it = Item::items[item->getID()];
 
 	add<uint16_t>(it.clientId);
-	addByte(0xFF); // MARK_UNMARKED
+	addByte(item->isLocked() ? 0xFE : 0xFF); // 0xFE = MARK_LOCKED (trava do item), 0xFF = MARK_UNMARKED
 
 	if (it.stackable) {
 		addByte(std::min<uint16_t>(0xFF, item->getItemCount()));

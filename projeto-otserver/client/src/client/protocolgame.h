@@ -68,6 +68,7 @@ public:
     void sendUseOnCreature(const Position& pos, uint16_t thingId, uint8_t stackpos, uint32_t creatureId);
     void sendRotateItem(const Position& pos, uint16_t thingId, uint8_t stackpos);
     void sendOnWrapItem(const Position& pos, uint16_t thingId, uint8_t stackpos);
+    void sendLockItem(const Position& pos, uint16_t thingId, uint8_t stackpos);
     void sendCloseContainer(uint8_t containerId);
     void sendUpContainer(uint8_t containerId);
     void sendEditText(uint32_t id, std::string_view text);

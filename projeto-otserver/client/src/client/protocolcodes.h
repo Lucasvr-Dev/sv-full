@@ -271,6 +271,7 @@ namespace Proto
         ClientTurnSouth = 113,
         ClientTurnWest = 114,
         ClientGmTeleport = 115,
+        ClientLockItem = 118,
         ClientEquipItem = 119,
         ClientMove = 120,
         ClientInspectNpcTrade = 121,

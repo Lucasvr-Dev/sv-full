@@ -243,6 +243,7 @@ void Client::registerLuaFunctions()
     g_lua.bindSingletonFunction("g_game", "moveToParentContainer", &Game::moveToParentContainer, &g_game);
     g_lua.bindSingletonFunction("g_game", "rotate", &Game::rotate, &g_game);
     g_lua.bindSingletonFunction("g_game", "wrap", &Game::wrap, &g_game);
+    g_lua.bindSingletonFunction("g_game", "lockItem", &Game::lockItem, &g_game);
     g_lua.bindSingletonFunction("g_game", "use", &Game::use, &g_game);
     g_lua.bindSingletonFunction("g_game", "useWith", &Game::useWith, &g_game);
     g_lua.bindSingletonFunction("g_game", "useInventoryItem", &Game::useInventoryItem, &g_game);
@@ -770,6 +771,7 @@ void Client::registerLuaFunctions()
     g_lua.bindClassMemberFunction<Item>("setCount", &Item::setCount);
     g_lua.bindClassMemberFunction<Item>("setTooltip", &Item::setTooltip);
     g_lua.bindClassMemberFunction<Item>("setTier", &Item::setTier);
+    g_lua.bindClassMemberFunction<Item>("isLocked", &Item::isLocked);
 
     g_lua.bindClassMemberFunction<Item>("getCount", &Item::getCount);
     g_lua.bindClassMemberFunction<Item>("getSubType", &Item::getSubType);

@@ -624,6 +624,9 @@ void ProtocolGame::parsePacket(NetworkMessage &msg)
 	case 0x72:
 		addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, &Game::playerTurn, player->getID(), DIRECTION_WEST);
 		break;
+	case 0x76:
+		parseLockItem(msg);
+		break;
 	case 0x77:
 		parseEquipObject(msg);
 		break;
@@ -1397,6 +1400,14 @@ void ProtocolGame::parseRotateItem(NetworkMessage &msg)
 	uint16_t spriteId = msg.get<uint16_t>();
 	uint8_t stackpos = msg.getByte();
 	addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, &Game::playerRotateItem, player->getID(), pos, stackpos, spriteId);
+}
+
+void ProtocolGame::parseLockItem(NetworkMessage &msg)
+{
+	Position pos = msg.getPosition();
+	uint16_t spriteId = msg.get<uint16_t>();
+	uint8_t stackpos = msg.getByte();
+	addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, &Game::playerToggleItemLock, player->getID(), pos, stackpos, spriteId);
 }
 
 void ProtocolGame::parseRuleViolationReport(NetworkMessage &msg)
@@ -2830,6 +2841,12 @@ void ProtocolGame::sendDistanceShoot(const Position &from, const Position &to, u
 void ProtocolGame::sendMagicEffect(const Position &pos, uint16_t type)
 {
 	if (!canSee(pos))
+	{
+		return;
+	}
+
+	// nunca envia o efeito "poff" (nem CONST_ME_NONE) ao client, venha de onde vier
+	if (type == CONST_ME_POFF || type == CONST_ME_NONE)
 	{
 		return;
 	}

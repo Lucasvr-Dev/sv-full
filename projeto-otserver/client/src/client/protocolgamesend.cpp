@@ -474,6 +474,16 @@ void ProtocolGame::sendOnWrapItem(const Position& pos, const uint16_t thingId, c
     send(msg);
 }
 
+void ProtocolGame::sendLockItem(const Position& pos, const uint16_t thingId, const uint8_t stackpos)
+{
+    const auto& msg = std::make_shared<OutputMessage>();
+    msg->addU8(Proto::ClientLockItem);
+    addPosition(msg, pos);
+    msg->addU16(thingId);
+    msg->addU8(stackpos);
+    send(msg);
+}
+
 void ProtocolGame::sendCloseContainer(const uint8_t containerId)
 {
     const auto& msg = std::make_shared<OutputMessage>();
