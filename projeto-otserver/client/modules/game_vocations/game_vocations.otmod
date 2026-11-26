@@ -1,0 +1,8 @@
+Module
+  name: game_vocations
+  description: Vocation collection (fragments, unlock and switch between independent characters)
+  author: sv-full
+  sandboxed: true
+  scripts: [ game_vocations ]
+  @onLoad: init()
+  @onUnload: terminate()
