@@ -1005,6 +1005,24 @@ class Item : virtual public Thing
 
 		bool hasMarketAttributes() const;
 
+		// Item trancado: nao pode ser jogado no chao nem deletado.
+		// Guardado como atributo customizado "locked", entao e salvo junto com o item.
+		bool isLocked() const {
+			if (!attributes) {
+				return false;
+			}
+			// leitura apenas: getCustomAttribute nao e const mas nao modifica nada
+			return const_cast<ItemAttributes*>(attributes.get())->getCustomAttribute(std::string("locked")) != nullptr;
+		}
+		void setLocked(bool value) {
+			if (value) {
+				std::string key = "locked";
+				getAttributes()->setCustomAttribute(key, static_cast<int64_t>(1));
+			} else if (attributes) {
+				attributes->removeCustomAttribute(std::string("locked"));
+			}
+		}
+
 		std::unique_ptr<ItemAttributes>& getAttributes() {
 			if (!attributes) {
 				attributes.reset(new ItemAttributes());

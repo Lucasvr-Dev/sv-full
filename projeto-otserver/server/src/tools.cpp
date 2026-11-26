@@ -1225,6 +1225,9 @@ const char* getReturnMessage(ReturnValue value)
 		case RETURNVALUE_YOUCANNOTUSETHISBED:
 			return "This bed can't be used, but Premium Account players can rent houses and sleep in beds there to regain health and mana.";
 
+		case RETURNVALUE_ITEMLOCKED:
+			return "You cannot throw away a locked item.";
+
 		default: // RETURNVALUE_NOTPOSSIBLE, etc
 			return "Sorry, not possible.";
 	}
