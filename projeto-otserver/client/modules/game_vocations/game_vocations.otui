@@ -80,7 +80,7 @@ VocationCard < UIWidget
 MainWindow
   id: vocationsWindow
   !text: tr('Characters')
-  size: 360 540
+  size: 360 610
   @onEscape: modules.game_vocations.hide()
 
   Label
