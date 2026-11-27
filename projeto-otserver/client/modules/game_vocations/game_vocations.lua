@@ -92,7 +92,9 @@ local function setupCard(card, voc)
 
     local outfit = card:recursiveGetChildById('outfit')
     outfit:setOutfit(OUTFITS[voc.id] or {type = 128})
-    outfit:setAnimate(voc.active)
+
+    card:recursiveGetChildById('fragmentsText'):setText(
+        tr('Fragments') .. ': ' .. voc.fragments .. ' / ' .. voc.required)
 
     local bar = card:recursiveGetChildById('fragments')
     bar:setValue(voc.fragments, 0, voc.required)
