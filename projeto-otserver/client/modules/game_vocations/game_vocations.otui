@@ -1,0 +1,117 @@
+VocationCard < UIWidget
+  size: 150 200
+  background-color: #00000088
+  border-width: 1
+  border-color: #5a5a5a
+  focusable: false
+
+  Label
+    id: level
+    anchors.top: parent.top
+    anchors.left: parent.left
+    margin-top: 4
+    margin-left: 4
+    width: 34
+    height: 20
+    text-align: center
+    background-color: #8a6a2a
+    border-width: 1
+    border-color: #d9b45a
+    color: white
+    font: verdana-11px-monochrome
+
+  Creature
+    id: outfit
+    anchors.top: parent.top
+    anchors.horizontalCenter: parent.horizontalCenter
+    margin-top: 22
+    size: 64 64
+    phantom: true
+
+  Label
+    id: name
+    anchors.top: outfit.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 4
+    text-align: center
+    color: #ffffff
+    font: verdana-11px-rounded
+
+  Label
+    id: description
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin: 2 6 0 6
+    height: 26
+    text-wrap: true
+    text-align: center
+    color: #BFBFBF
+    font: verdana-11px-monochrome
+
+  ProgressBar
+    id: fragments
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: action.top
+    margin: 0 6 4 6
+    height: 14
+    background-color: #2f6f2f
+
+  Button
+    id: action
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    margin: 0 6 6 6
+    height: 22
+
+MainWindow
+  id: vocationsWindow
+  !text: tr('Characters')
+  size: 360 520
+  @onEscape: modules.game_vocations.hide()
+
+  Label
+    id: info
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    !text: tr('Collect 100 fragments to permanently unlock a vocation. Each vocation keeps its own level and skills.')
+    text-wrap: true
+    height: 30
+    color: #BFBFBF
+    font: verdana-11px-monochrome
+
+  Label
+    id: message
+    anchors.top: info.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 4
+    height: 14
+    text-align: center
+    color: #ffd35a
+
+  Panel
+    id: cardList
+    anchors.top: message.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: closeButton.top
+    margin-top: 6
+    margin-bottom: 8
+    layout:
+      type: grid
+      cell-size: 150 200
+      cell-spacing: 8
+      flow: true
+
+  Button
+    id: closeButton
+    !text: tr('Close')
+    width: 80
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    @onClick: modules.game_vocations.hide()

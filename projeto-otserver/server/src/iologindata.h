@@ -29,6 +29,9 @@ class IOLoginData
 		static bool loadPlayerByName(Player* player, const std::string& name);
 		static bool loadPlayer(Player* player, DBResult_ptr result);
 		static bool savePlayer(Player* player);
+		// Vocation collection: snapshots the active progression into `player_vocation_collection`
+		// and restores the (unlocked) target vocation's own progression. Equipment is untouched.
+		static bool switchVocationProfile(Player* player, uint16_t targetBaseVocationId);
 		static uint32_t getGuidByName(const std::string& name);
 		static bool getGuidByNameEx(uint32_t& guid, bool& specialVip, std::string& name);
 		static std::string getNameByGuid(uint32_t guid);

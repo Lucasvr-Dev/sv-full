@@ -10,6 +10,7 @@
 #include <fmt/format.h>
 
 extern ConfigManager g_config;
+extern Vocations g_vocations;
 extern Game g_game;
 
 Account IOLoginData::loadAccount(uint32_t accno)
@@ -971,4 +972,149 @@ void IOLoginData::removeVIPEntry(uint32_t accountId, uint32_t guid)
 void IOLoginData::updatePremiumTime(uint32_t accountId, time_t endTime)
 {
 	Database::getInstance().executeQuery(fmt::format("UPDATE `accounts` SET `premium_ends_at` = {:d} WHERE `id` = {:d}", endTime, accountId));
+}
+
+namespace {
+
+const char* const VOC_SKILL_COLUMNS[] = {"skill_fist", "skill_club", "skill_sword", "skill_axe", "skill_dist", "skill_shielding", "skill_fishing"};
+const char* const VOC_SKILL_TRIES_COLUMNS[] = {"skill_fist_tries", "skill_club_tries", "skill_sword_tries", "skill_axe_tries", "skill_dist_tries", "skill_shielding_tries", "skill_fishing_tries"};
+
+// Starting values of a vocation that is used for the first time (same as a fresh level 8 character).
+constexpr uint32_t VOC_START_LEVEL = 8;
+constexpr int32_t VOC_START_HEALTH = 185;
+constexpr uint32_t VOC_START_MANA = 35;
+constexpr uint32_t VOC_START_CAP = 470;
+
+} // namespace
+
+bool IOLoginData::switchVocationProfile(Player* player, uint16_t targetBaseVocationId)
+{
+	if (!player || !player->vocation) {
+		return false;
+	}
+
+	Database& db = Database::getInstance();
+	const uint32_t guid = player->getGUID();
+	const uint16_t currentBaseId = static_cast<uint16_t>(player->vocation->getFromVocation());
+
+	Vocation* targetBase = g_vocations.getVocation(targetBaseVocationId);
+	if (!targetBase || targetBaseVocationId == 0 || targetBase->getFromVocation() != targetBaseVocationId) {
+		return false; // only base vocations can be targeted
+	}
+
+	if (currentBaseId == targetBaseVocationId) {
+		return true;
+	}
+
+	// The target must be unlocked. Checked here too, so a bad Lua script can never bypass the fragment system.
+	DBResult_ptr target = db.storeQuery(fmt::format("SELECT * FROM `player_vocation_collection` WHERE `player_id` = {:d} AND `base_vocation` = {:d} AND `unlocked` = 1", guid, targetBaseVocationId));
+	if (!target) {
+		return false;
+	}
+
+	// 1) Snapshot the active progression into the row of the vocation being left.
+	//    Only profile columns are written, so `fragments` and `unlocked` are never touched.
+	std::ostringstream cols, vals, upd;
+	cols << "`player_id`, `base_vocation`, `has_profile`, `vocation`, `level`, `experience`, `health`, `healthmax`, `mana`, `manamax`, `maglevel`, `manaspent`, `cap`, `soul`";
+	vals << guid << ',' << currentBaseId << ",1," << player->getVocationId() << ',' << player->level << ',' << player->experience << ','
+	     << player->health << ',' << player->healthMax << ',' << player->mana << ',' << player->manaMax << ',' << player->magLevel << ','
+	     << player->manaSpent << ',' << (player->capacity / 100) << ',' << static_cast<uint16_t>(player->soul);
+	upd << "`has_profile` = 1, `vocation` = VALUES(`vocation`), `level` = VALUES(`level`), `experience` = VALUES(`experience`), `health` = VALUES(`health`), `healthmax` = VALUES(`healthmax`), "
+	       "`mana` = VALUES(`mana`), `manamax` = VALUES(`manamax`), `maglevel` = VALUES(`maglevel`), `manaspent` = VALUES(`manaspent`), `cap` = VALUES(`cap`), `soul` = VALUES(`soul`)";
+	for (uint8_t i = 0; i <= SKILL_LAST; ++i) {
+		cols << ", `" << VOC_SKILL_COLUMNS[i] << "`, `" << VOC_SKILL_TRIES_COLUMNS[i] << '`';
+		vals << ',' << player->skills[i].level << ',' << player->skills[i].tries;
+		upd << ", `" << VOC_SKILL_COLUMNS[i] << "` = VALUES(`" << VOC_SKILL_COLUMNS[i] << "`), `" << VOC_SKILL_TRIES_COLUMNS[i] << "` = VALUES(`" << VOC_SKILL_TRIES_COLUMNS[i] << "`)";
+	}
+
+	if (!db.executeQuery(fmt::format("INSERT INTO `player_vocation_collection` ({:s}) VALUES ({:s}) ON DUPLICATE KEY UPDATE {:s}", cols.str(), vals.str(), upd.str()))) {
+		return false; // nothing was changed in memory yet
+	}
+
+	// 2) Restore the target profile (or build a fresh one on first use).
+	const bool hasProfile = target->getNumber<uint16_t>("has_profile") != 0;
+	uint16_t newVocationId = targetBaseVocationId;
+	uint32_t level = VOC_START_LEVEL;
+	uint64_t experience = Player::getExpForLevel(VOC_START_LEVEL);
+	int32_t health = VOC_START_HEALTH, healthMax = VOC_START_HEALTH;
+	uint32_t mana = VOC_START_MANA, manaMax = VOC_START_MANA, magLevel = 0, cap = VOC_START_CAP;
+	uint64_t manaSpent = 0;
+	uint16_t soul = targetBase->getSoulMax();
+	uint32_t skillLevel[SKILL_LAST + 1];
+	uint64_t skillTries[SKILL_LAST + 1];
+	for (uint8_t i = 0; i <= SKILL_LAST; ++i) {
+		skillLevel[i] = 10;
+		skillTries[i] = 0;
+	}
+
+	if (hasProfile) {
+		newVocationId = target->getNumber<uint16_t>("vocation");
+		if (!g_vocations.getVocation(newVocationId)) {
+			newVocationId = targetBaseVocationId;
+		}
+		level = std::max<uint32_t>(1, target->getNumber<uint32_t>("level"));
+		experience = target->getNumber<uint64_t>("experience");
+		health = target->getNumber<int32_t>("health");
+		healthMax = target->getNumber<int32_t>("healthmax");
+		mana = target->getNumber<uint32_t>("mana");
+		manaMax = target->getNumber<uint32_t>("manamax");
+		magLevel = target->getNumber<uint32_t>("maglevel");
+		manaSpent = target->getNumber<uint64_t>("manaspent");
+		cap = target->getNumber<uint32_t>("cap");
+		soul = target->getNumber<uint16_t>("soul");
+		for (uint8_t i = 0; i <= SKILL_LAST; ++i) {
+			skillLevel[i] = target->getNumber<uint32_t>(VOC_SKILL_COLUMNS[i]);
+			skillTries[i] = target->getNumber<uint64_t>(VOC_SKILL_TRIES_COLUMNS[i]);
+		}
+	}
+
+	// 3) Apply to the live player (same sanity rules as loadPlayer).
+	if (!player->setVocation(newVocationId)) {
+		return false;
+	}
+
+	player->level = level;
+	const uint64_t currExpCount = Player::getExpForLevel(level);
+	const uint64_t nextExpCount = Player::getExpForLevel(level + 1);
+	if (experience < currExpCount || experience > nextExpCount) {
+		experience = currExpCount;
+	}
+	player->experience = experience;
+	player->levelPercent = currExpCount < nextExpCount ? Player::getPercentLevel(experience - currExpCount, nextExpCount - currExpCount) : 0;
+
+	player->healthMax = healthMax;
+	player->health = std::min<int32_t>(health, player->getMaxHealth());
+	player->manaMax = manaMax;
+	player->mana = std::min<uint32_t>(mana, static_cast<uint32_t>(player->getMaxMana()));
+	player->soul = static_cast<uint8_t>(std::min<uint16_t>(soul, player->vocation->getSoulMax()));
+	player->capacity = cap * 100;
+
+	player->magLevel = magLevel;
+	const uint64_t nextManaCount = player->vocation->getReqMana(magLevel + 1);
+	if (manaSpent > nextManaCount) {
+		manaSpent = 0;
+	}
+	player->manaSpent = manaSpent;
+	player->magLevelPercent = Player::getPercentLevel(manaSpent, nextManaCount);
+
+	for (uint8_t i = 0; i <= SKILL_LAST; ++i) {
+		const uint64_t nextTries = player->vocation->getReqSkillTries(i, skillLevel[i] + 1);
+		if (skillTries[i] > nextTries) {
+			skillTries[i] = 0;
+		}
+		player->skills[i].level = static_cast<uint16_t>(skillLevel[i]);
+		player->skills[i].tries = skillTries[i];
+		player->skills[i].percent = Player::getPercentLevel(skillTries[i], nextTries);
+	}
+
+	// 4) Refresh everything that depends on level/vocation and tell the client.
+	player->updateBaseSpeed();
+	g_game.changeSpeed(player, 0);
+	g_game.addCreatureHealth(player);
+	player->sendBasicData();
+	player->sendStats();
+	player->sendSkills();
+
+	// Persist right away so `players` and the collection stay coherent even on a crash.
+	return savePlayer(player);
 }

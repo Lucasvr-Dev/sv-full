@@ -6,6 +6,7 @@
 	<talkaction words="/ban" separator=" " script="ban.lua" />
 	<talkaction words="/ipban" separator=" " script="ipban.lua" />
 	<talkaction words="/unban" separator=" " script="unban.lua" />
+	<talkaction words="/addfragments" separator=" " script="add_fragments.lua" />
 	<talkaction words="/up" script="up.lua" />
 	<talkaction words="/down" script="down.lua" />
 	<talkaction words="/c" separator=" " script="teleport_creature_here.lua" />
@@ -43,6 +44,8 @@
 	<talkaction words="!sellhouse" separator=" " script="sellhouse.lua" />
 	<talkaction words="!leavehouse" script="leavehouse.lua" />
 	<talkaction words="!changesex" script="changesex.lua" />
+	<talkaction words="!vocations" script="vocations.lua" />
+	<talkaction words="!changevocation" separator=" " script="vocations.lua" />
 	<talkaction words="!uptime" script="uptime.lua" />
 	<talkaction words="!deathlist" script="deathlist.lua" />
 	<talkaction words="!kills" script="kills.lua" />

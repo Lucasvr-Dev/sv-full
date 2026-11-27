@@ -1,3 +1,6 @@
+-- JSON (used by client<->server extended opcodes)
+dofile('data/lib/json.lua')
+
 -- Core API functions implemented in Lua
 dofile('data/lib/core/core.lua')
 

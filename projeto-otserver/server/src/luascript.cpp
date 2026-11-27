@@ -2406,6 +2406,7 @@ void LuaScriptInterface::registerFunctions()
 
 	registerMethod("Player", "getVocation", LuaScriptInterface::luaPlayerGetVocation);
 	registerMethod("Player", "setVocation", LuaScriptInterface::luaPlayerSetVocation);
+	registerMethod("Player", "switchVocationProfile", LuaScriptInterface::luaPlayerSwitchVocationProfile);
 
 	registerMethod("Player", "getSex", LuaScriptInterface::luaPlayerGetSex);
 	registerMethod("Player", "setSex", LuaScriptInterface::luaPlayerSetSex);
@@ -8882,6 +8883,20 @@ int LuaScriptInterface::luaPlayerSetVocation(lua_State* L)
 
 	player->setVocation(vocation->getId());
 	pushBoolean(L, true);
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerSwitchVocationProfile(lua_State* L)
+{
+	// player:switchVocationProfile(baseVocationId)
+	// Saves the active progression, restores the target one. Fails if the target is not unlocked.
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	pushBoolean(L, IOLoginData::switchVocationProfile(player, getNumber<uint16_t>(L, 2)));
 	return 1;
 }
 
