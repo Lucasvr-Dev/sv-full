@@ -1,5 +1,5 @@
 VocationCard < UIWidget
-  size: 150 200
+  size: 150 214
   background-color: #00000088
   border-width: 1
   border-color: #5a5a5a
@@ -44,10 +44,20 @@ VocationCard < UIWidget
     anchors.left: parent.left
     anchors.right: parent.right
     margin: 2 6 0 6
-    height: 26
+    height: 24
     text-wrap: true
     text-align: center
     color: #BFBFBF
+    font: verdana-11px-monochrome
+
+  Label
+    id: fragmentsText
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: fragments.top
+    margin: 0 6 2 6
+    text-align: center
+    color: #ffd35a
     font: verdana-11px-monochrome
 
   ProgressBar
@@ -70,7 +80,7 @@ VocationCard < UIWidget
 MainWindow
   id: vocationsWindow
   !text: tr('Characters')
-  size: 360 520
+  size: 360 540
   @onEscape: modules.game_vocations.hide()
 
   Label
@@ -104,7 +114,7 @@ MainWindow
     margin-bottom: 8
     layout:
       type: grid
-      cell-size: 150 200
+      cell-size: 150 214
       cell-spacing: 8
       flow: true
 
