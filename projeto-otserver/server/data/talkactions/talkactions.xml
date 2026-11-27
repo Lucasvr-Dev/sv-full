@@ -37,6 +37,7 @@
 	<talkaction words="/addlevel" separator=" " script="add_level.lua"/>
 	<talkaction words="/reload" separator=" " script="reload.lua" />
 	<talkaction words="/raid" separator=" " script="force_raid.lua" />
+	<talkaction words="/give" separator=" " script="give.lua" />
 
 	<!-- player talkactions -->
 	<talkaction words="!buypremium" script="buyprem.lua" />

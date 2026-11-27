@@ -18,15 +18,15 @@ local MINHA_ANIM = {
 	[DIRECTION_SOUTH] = {effect = 362, col = 4, row = 2, grid = {w = 5, h = 5}},
 	[DIRECTION_NORTH] = {effect = 361, col = 4, row = 5, grid = {w = 5, h = 5}},
 	[DIRECTION_EAST]  = {effect = 359, col = 2, row = 4, grid = {w = 5, h = 5}},
-	[DIRECTION_WEST]  = {effect = 360, col = 5, row = 4, grid = {w = 5, h = 5}},
+	[DIRECTION_WEST]  = {effect = 380, col = 5, row = 4, grid = {w = 5, h = 5}},
 }
 
 function onCastSpell(creature, variant)
 	faceTarget(creature)
 	GiantSprite.play(creature, MINHA_ANIM)
 
-	return playSkillAnimation(creature, "skill_ms1000", variant, function(player, var)
+	return playSkillAnimation(creature, "skill_ms1600", variant, function(player, var)
 		return combat:execute(creature, variant)
 	end,
-		{ hitAt = { 300, 900 } }) -- 2 hits: aos 400 ms e aos 800 ms
+		{ hitAt = { 100, 400, 700 } }) -- 2 hits: aos 400 ms e aos 800 ms
 end
