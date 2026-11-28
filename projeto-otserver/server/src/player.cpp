@@ -849,6 +849,17 @@ void Player::sendStats()
 	}
 }
 
+void Player::setStarBonusBasisPoints(int32_t basisPoints)
+{
+	basisPoints = std::max<int32_t>(0, basisPoints);
+	if (starBonusBp == basisPoints) {
+		return;
+	}
+	starBonusBp = basisPoints;
+	sendStats();
+	sendSkills();
+}
+
 void Player::sendPing()
 {
 	int64_t timeNow = OTSYS_TIME();

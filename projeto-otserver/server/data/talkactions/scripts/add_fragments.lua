@@ -35,8 +35,9 @@ function onSay(player, words, param)
 
 	VocationCollection.addFragments(target, baseId, amount)
 	local name = VocationCollection.getEntry(baseId).name
-	local frags = VocationCollection.getState(target)[baseId].fragments
-	player:sendTextMessage(MESSAGE_INFO_DESCR, string.format("+%d fragmentos de %s para %s (total %d/%d).", amount, name, target:getName(), frags, VocationCollection.FRAGMENTS_REQUIRED))
+	local s = VocationCollection.getState(target)[baseId]
+	local total = s.unlocked and string.format("%d disponiveis para estrelas", s.fragments) or string.format("%d/%d para desbloquear", s.fragments, VocationCollection.FRAGMENTS_REQUIRED)
+	player:sendTextMessage(MESSAGE_INFO_DESCR, string.format("+%d fragmentos de %s para %s (%s).", amount, name, target:getName(), total))
 	if target ~= player then
 		target:sendTextMessage(MESSAGE_INFO_DESCR, string.format("Voce recebeu %d fragmentos de %s.", amount, name))
 	end

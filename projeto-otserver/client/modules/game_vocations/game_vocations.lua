@@ -82,6 +82,48 @@ function toggle()
     end
 end
 
+local STAR_FULL = '/game_vocations/images/star_full'
+local STAR_EMPTY = '/game_vocations/images/star_empty'
+local STAR_SIZE = 18
+local CARD_WIDTH = 150
+
+local function percent(value)
+    return string.format('%g', value or 0)
+end
+
+-- Row of stars at the bottom of the card: `stars` filled, the rest empty (all values come from the server).
+local function setupStars(card, voc)
+    local panel = card:recursiveGetChildById('stars')
+    local maxStars = math.max(1, voc.maxStars or 1)
+    local step = math.min(STAR_SIZE + 2, math.floor((CARD_WIDTH - 8) / maxStars))
+    local offset = math.floor((CARD_WIDTH - ((maxStars - 1) * step + STAR_SIZE)) / 2)
+    for i = 1, maxStars do
+        local star = g_ui.createWidget('VocationStar', panel)
+        star:addAnchor(AnchorLeft, 'parent', AnchorLeft)
+        star:setMarginLeft(offset + (i - 1) * step)
+        star:setImageSource(i <= voc.stars and STAR_FULL or STAR_EMPTY)
+    end
+
+    local tip
+    if not voc.unlocked then
+        tip = tr('Vocation locked') .. '\n' ..
+            tr('Fragments to unlock') .. ': ' .. voc.fragments .. ' / ' .. voc.required
+    else
+        tip = tr('Stars') .. ': ' .. voc.stars .. ' / ' .. voc.maxStars .. '\n' ..
+            tr('Fragments available') .. ': ' .. voc.fragments .. '\n'
+        if voc.nextCost then
+            tip = tip .. tr('Fragments for next star') .. ': ' .. voc.nextCost .. '\n'
+        end
+        tip = tip .. tr('Total attribute bonus') .. ': +' .. percent(voc.bonus) .. '%'
+        if voc.nextBonus then
+            tip = tip .. '\n' .. tr('Next star bonus') .. ': +' .. percent(voc.nextBonus) .. '%'
+        else
+            tip = tip .. '\n' .. tr('Maximum evolution reached')
+        end
+    end
+    panel:setTooltip(tip)
+end
+
 local function setupCard(card, voc)
     card:setId('voc' .. voc.id)
     card:recursiveGetChildById('name'):setText(voc.name)
@@ -93,12 +135,30 @@ local function setupCard(card, voc)
     local outfit = card:recursiveGetChildById('outfit')
     outfit:setOutfit(OUTFITS[voc.id] or {type = 128})
 
-    card:recursiveGetChildById('fragmentsText'):setText(
-        tr('Fragments') .. ': ' .. voc.fragments .. ' / ' .. voc.required)
+    setupStars(card, voc)
 
+    -- locked: progress towards the unlock; unlocked: progress towards the next star (or max level)
+    local fragmentsText = card:recursiveGetChildById('fragmentsText')
     local bar = card:recursiveGetChildById('fragments')
-    bar:setValue(voc.fragments, 0, voc.required)
-    bar:setText(voc.unlocked and tr('Unlocked') or (voc.fragments .. ' / ' .. voc.required))
+    local evolve = card:recursiveGetChildById('evolve')
+    evolve:setVisible(false)
+    if not voc.unlocked then
+        fragmentsText:setText(tr('Fragments') .. ': ' .. voc.fragments .. ' / ' .. voc.required)
+        bar:setValue(voc.fragments, 0, voc.required)
+        bar:setText(voc.fragments .. ' / ' .. voc.required)
+    elseif voc.nextCost then
+        fragmentsText:setText(tr('Fragments') .. ': ' .. voc.fragments .. ' / ' .. voc.nextCost)
+        bar:setValue(math.min(voc.fragments, voc.nextCost), 0, voc.nextCost)
+        bar:setText(voc.fragments .. ' / ' .. voc.nextCost)
+        evolve:setVisible(true)
+        evolve:setText(tr('Evolve'))
+        evolve:setEnabled(voc.fragments >= voc.nextCost)
+        evolve.onClick = function() send('evolve', voc.id) end
+    else
+        fragmentsText:setText(tr('Max evolution'))
+        bar:setValue(1, 0, 1)
+        bar:setText(tr('MAX'))
+    end
 
     local action = card:recursiveGetChildById('action')
     if voc.active then

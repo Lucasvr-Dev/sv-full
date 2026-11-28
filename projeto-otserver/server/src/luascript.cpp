@@ -2407,6 +2407,8 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Player", "getVocation", LuaScriptInterface::luaPlayerGetVocation);
 	registerMethod("Player", "setVocation", LuaScriptInterface::luaPlayerSetVocation);
 	registerMethod("Player", "switchVocationProfile", LuaScriptInterface::luaPlayerSwitchVocationProfile);
+	registerMethod("Player", "getVocationStarBonus", LuaScriptInterface::luaPlayerGetVocationStarBonus);
+	registerMethod("Player", "setVocationStarBonus", LuaScriptInterface::luaPlayerSetVocationStarBonus);
 
 	registerMethod("Player", "getSex", LuaScriptInterface::luaPlayerGetSex);
 	registerMethod("Player", "setSex", LuaScriptInterface::luaPlayerSetSex);
@@ -8897,6 +8899,33 @@ int LuaScriptInterface::luaPlayerSwitchVocationProfile(lua_State* L)
 	}
 
 	pushBoolean(L, IOLoginData::switchVocationProfile(player, getNumber<uint16_t>(L, 2)));
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetVocationStarBonus(lua_State* L)
+{
+	// player:getVocationStarBonus() -> basis points (100 = 1%)
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		lua_pushinteger(L, player->getStarBonusBasisPoints());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerSetVocationStarBonus(lua_State* L)
+{
+	// player:setVocationStarBonus(basisPoints)
+	// Runtime only (never saved): Magic Level and Club/Sword/Axe/Distance/Shield are read with this bonus on top.
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	player->setStarBonusBasisPoints(getNumber<int32_t>(L, 2));
+	pushBoolean(L, true);
 	return 1;
 }
 
