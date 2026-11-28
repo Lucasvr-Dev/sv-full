@@ -1,5 +1,10 @@
+VocationStar < UIWidget
+  size: 18 18
+  anchors.top: parent.top
+  phantom: true
+
 VocationCard < UIWidget
-  size: 150 214
+  size: 150 236
   background-color: #00000088
   border-width: 1
   border-color: #5a5a5a
@@ -50,6 +55,14 @@ VocationCard < UIWidget
     color: #BFBFBF
     font: verdana-11px-monochrome
 
+  Panel
+    id: stars
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: fragmentsText.top
+    margin: 0 0 3 0
+    height: 18
+
   Label
     id: fragmentsText
     anchors.left: parent.left
@@ -72,9 +85,17 @@ VocationCard < UIWidget
   Button
     id: action
     anchors.left: parent.left
+    anchors.bottom: parent.bottom
+    margin: 0 0 6 6
+    width: 66
+    height: 22
+
+  Button
+    id: evolve
     anchors.right: parent.right
     anchors.bottom: parent.bottom
-    margin: 0 6 6 6
+    margin: 0 6 6 0
+    width: 66
     height: 22
 
 MainWindow
@@ -88,9 +109,9 @@ MainWindow
     anchors.top: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
-    !text: tr('Collect 100 fragments to permanently unlock a vocation. Each vocation keeps its own level and skills.')
+    !text: tr('Collect 100 fragments to unlock a vocation (they are consumed). Extra fragments evolve its stars and raise its attributes. Each vocation keeps its own level, skills and stars.')
     text-wrap: true
-    height: 30
+    height: 42
     color: #BFBFBF
     font: verdana-11px-monochrome
 
@@ -114,7 +135,7 @@ MainWindow
     margin-bottom: 8
     layout:
       type: grid
-      cell-size: 150 214
+      cell-size: 150 236
       cell-spacing: 8
       flow: true
 

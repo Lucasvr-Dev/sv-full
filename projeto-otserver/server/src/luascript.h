@@ -931,6 +931,8 @@ class LuaScriptInterface
 		static int luaPlayerGetVocation(lua_State* L);
 		static int luaPlayerSetVocation(lua_State* L);
 		static int luaPlayerSwitchVocationProfile(lua_State* L);
+		static int luaPlayerGetVocationStarBonus(lua_State* L);
+		static int luaPlayerSetVocationStarBonus(lua_State* L);
 
 		static int luaPlayerGetSex(lua_State* L);
 		static int luaPlayerSetSex(lua_State* L);

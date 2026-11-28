@@ -19,7 +19,11 @@ function onSay(player, words, param)
 	local lines = {}
 	for _, entry in ipairs(VocationCollection.BASE) do
 		local s = state[entry.id]
-		lines[#lines + 1] = string.format("%s: %s (%d/%d)", entry.name, s.unlocked and "desbloqueada" or "bloqueada", math.min(s.fragments, VocationCollection.FRAGMENTS_REQUIRED), VocationCollection.FRAGMENTS_REQUIRED)
+		if s.unlocked then
+			lines[#lines + 1] = string.format("%s: desbloqueada, %d/%d estrelas (%d fragmentos)", entry.name, s.stars, VocationCollection.getMaxStars(), s.fragments)
+		else
+			lines[#lines + 1] = string.format("%s: bloqueada (%d/%d)", entry.name, math.min(s.fragments, VocationCollection.FRAGMENTS_REQUIRED), VocationCollection.FRAGMENTS_REQUIRED)
+		end
 	end
 	player:sendTextMessage(MESSAGE_INFO_DESCR, table.concat(lines, "\n"))
 	VocationCollection.sendList(player)

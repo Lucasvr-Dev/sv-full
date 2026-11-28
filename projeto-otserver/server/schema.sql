@@ -340,6 +340,7 @@ CREATE TABLE IF NOT EXISTS `player_vocation_collection` (
   `base_vocation` smallint unsigned NOT NULL,
   `fragments` int unsigned NOT NULL DEFAULT '0',
   `unlocked` tinyint NOT NULL DEFAULT '0',
+  `stars` tinyint unsigned NOT NULL DEFAULT '1',
   `has_profile` tinyint NOT NULL DEFAULT '0',
   `vocation` smallint unsigned NOT NULL DEFAULT '0',
   `level` int unsigned NOT NULL DEFAULT '1',

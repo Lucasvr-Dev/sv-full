@@ -25,6 +25,9 @@ function onLogin(player)
 		player:setVocation(vocation:getDemotion())
 	end
 
+	-- Star bonus of the active vocation (derived from the saved stars, never stored in the skills)
+	VocationCollection.applyStarBonus(player)
+
 	-- Events
 	player:registerEvent("PlayerDeath")
 	player:registerEvent("DropLoot")

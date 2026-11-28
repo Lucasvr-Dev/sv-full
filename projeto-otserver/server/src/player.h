@@ -380,7 +380,7 @@ class Player final : public Creature, public Cylinder
 			return levelPercent;
 		}
 		uint32_t getMagicLevel() const {
-			return std::max<int32_t>(0, magLevel + varStats[STAT_MAGICPOINTS]);
+			return std::max<int32_t>(0, magLevel + getStarBonus(magLevel) + varStats[STAT_MAGICPOINTS]);
 		}
 		uint32_t getBaseMagicLevel() const {
 			return magLevel;
@@ -602,7 +602,31 @@ class Player final : public Creature, public Cylinder
 			return std::max<int32_t>(0, varSpecialSkills[skill]);
 		}
 		uint16_t getSkillLevel(uint8_t skill) const {
-			return std::max<int32_t>(0, skills[skill].level + varSkills[skill]);
+			return std::max<int32_t>(0, skills[skill].level + getStarSkillBonus(skill) + varSkills[skill]);
+		}
+
+		// Vocation stars: percentage (basis points, 100 = 1%) added on top of the BASE Magic Level, Club,
+		// Sword, Axe, Distance and Shield. It is derived on every read and never saved, so skills[]/magLevel
+		// always hold the real values and the bonus cannot be applied twice (save/load, restart, switch).
+		int32_t getStarBonusBasisPoints() const {
+			return starBonusBp;
+		}
+		void setStarBonusBasisPoints(int32_t basisPoints);
+		int32_t getStarBonus(uint32_t baseValue) const {
+			// truncated like the other percent modifiers of the server (condition.cpp)
+			return static_cast<int32_t>((static_cast<int64_t>(baseValue) * starBonusBp) / 10000);
+		}
+		int32_t getStarSkillBonus(uint8_t skill) const {
+			switch (skill) {
+				case SKILL_CLUB:
+				case SKILL_SWORD:
+				case SKILL_AXE:
+				case SKILL_DISTANCE:
+				case SKILL_SHIELD:
+					return getStarBonus(skills[skill].level);
+				default:
+					return 0;
+			}
 		}
 		uint16_t getBaseSkill(uint8_t skill) const {
 			return skills[skill].level;
@@ -1287,6 +1311,7 @@ class Player final : public Creature, public Cylinder
 		uint32_t editListId = 0;
 		uint32_t mana = 0;
 		uint32_t manaMax = 0;
+		int32_t starBonusBp = 0;
 		int32_t varSkills[SKILL_LAST + 1] = {};
 		int32_t varSpecialSkills[SPECIALSKILL_LAST + 1] = {};
 		int32_t varStats[STAT_LAST + 1] = {};
